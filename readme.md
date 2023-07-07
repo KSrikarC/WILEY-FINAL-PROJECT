@@ -1,6 +1,6 @@
-# Colony Bank of India
+# Flask & SQL Web app for Banking application
 
-Colony Bank of India is a simple banking application developed using Flask and MySQL. It allows users to sign up, sign in, perform withdrawals, deposits, and view transaction history.
+This is a simple banking application developed using Flask and MySQL. It allows users to sign up, sign in, perform withdrawals, deposits, and view transaction history.
 
 ## Features
 
@@ -25,7 +25,7 @@ Colony Bank of India is a simple banking application developed using Flask and M
 
 1. Clone the repository:
 
-   git clone https://github.com/your-username/colony-bank.git
+   git clone https://github.com/your-username/ -bank.git
 
 2. Install the required dependencies:   
 
