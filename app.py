@@ -16,6 +16,36 @@ db_config = {
 def get_db_connection():
     return mysql.connector.connect(**db_config)
 
+def create_users_table(connection):
+    cursor = connection.cursor()
+    create_table_query = '''
+    CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        username VARCHAR(255) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        dob DATE NOT NULL,
+        mobile VARCHAR(20) NOT NULL,
+        amount DECIMAL(10, 2) NOT NULL
+    )
+    '''
+    cursor.execute(create_table_query)
+
+def create_transactions_table(connection):
+    cursor = connection.cursor()
+    create_table_query = '''
+    CREATE TABLE IF NOT EXISTS transactions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        transaction_type VARCHAR(255) NOT NULL,
+        amount VARCHAR(255) NOT NULL,
+        transaction_date DATETIME NOT NULL,
+        balance VARCHAR(255) NOT NULL,
+        user VARCHAR(255) NOT NULL
+    )
+    '''
+    cursor.execute(create_table_query)
+
+
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -42,6 +72,8 @@ def signup():
 
         connection = get_db_connection()
 
+        # Create the users table if it doesn't exist
+        create_users_table(connection)
 
         # Perform database operations (e.g., insert new user data)
         cursor = connection.cursor()
@@ -99,6 +131,7 @@ def homepage():
 def withdraw():
     connection = get_db_connection()
     cursor = connection.cursor()
+    create_transactions_table(connection)
     if request.method == 'POST':
         current_balance = request.form.get('balance')
         username = request.form.get('username')
@@ -124,6 +157,7 @@ def withdraw():
 def deposit():
     connection = get_db_connection()
     cursor = connection.cursor()
+    create_transactions_table(connection)
     if request.method == 'POST':
         # Retrieve form data
         current_balance = request.form.get('balance')
