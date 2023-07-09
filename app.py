@@ -1,4 +1,4 @@
-import mysql.connector 
+import mysql.connector, pytz 
 
 from flask import Flask, render_template, request, redirect
 from datetime import datetime
@@ -45,8 +45,9 @@ def create_transactions_table(connection):
     '''
     cursor.execute(create_table_query)
 
-
-
+connection = get_db_connection()
+create_users_table(connection)
+create_transactions_table(connection)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -62,6 +63,7 @@ def index():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    connection = get_db_connection()
     if request.method == 'POST':
         name = request.form.get('name')
         username = request.form.get('username')
@@ -69,13 +71,9 @@ def signup():
         dob = request.form.get('dob')
         mobile = request.form.get('mobile')
         amount = request.form.get('amount')
-
         connection = get_db_connection()
 
-        # Create the users table if it doesn't exist
-        create_users_table(connection)
-
-        # Perform database operations (e.g., insert new user data)
+       # Perform database operations (e.g., insert new user data)
         cursor = connection.cursor()
         sql = "INSERT INTO users (name, username, password, dob, mobile, amount) VALUES (%s, %s, %s, %s, %s, %s)"
         values = (name, username, password, dob, mobile, amount)
@@ -96,6 +94,8 @@ def signup_success():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    connection = get_db_connection()
+    
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -113,6 +113,9 @@ def login():
 
 @app.route('/homepage.html', methods=['GET', 'POST'])
 def homepage():
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    
     username = request.args.get('username')
     if request.method == 'POST':
         user_choice = request.form.get('user-choice')
@@ -131,7 +134,7 @@ def homepage():
 def withdraw():
     connection = get_db_connection()
     cursor = connection.cursor()
-    create_transactions_table(connection)
+    
     if request.method == 'POST':
         current_balance = request.form.get('balance')
         username = request.form.get('username')
@@ -140,8 +143,9 @@ def withdraw():
         sql = "UPDATE users SET amount = %s WHERE username = %s"
         cursor.execute(sql, (new_balance, username))
         connection.commit()
+        ist_time = datetime.now(pytz.timezone('Asia/Kolkata'))
         insert_transaction_query = "INSERT INTO transactions (transaction_type, amount, transaction_date, balance,user) VALUES (%s, %s, %s, %s,%s)"
-        transaction_data = ('Debit', withdrawal_amount, datetime.now(), new_balance,username)
+        transaction_data = ('Debit', withdrawal_amount, ist_time, new_balance,username)
         cursor.execute(insert_transaction_query, transaction_data)
         connection.commit()
         return render_template('withdraw_success.html', amount=withdrawal_amount,username=username)
@@ -157,7 +161,6 @@ def withdraw():
 def deposit():
     connection = get_db_connection()
     cursor = connection.cursor()
-    create_transactions_table(connection)
     if request.method == 'POST':
         # Retrieve form data
         current_balance = request.form.get('balance')
@@ -169,9 +172,10 @@ def deposit():
         sql = "UPDATE users SET amount = %s WHERE username = %s"
         cursor.execute(sql, (new_balance, username))
         connection.commit()
+        ist_time = datetime.now(pytz.timezone('Asia/Kolkata'))
         # Insert transaction details into the transactions table
         insert_transaction_query = "INSERT INTO transactions (transaction_type, amount, transaction_date, balance,user) VALUES (%s, %s, %s, %s,%s)"
-        transaction_data = ('Credit', deposit_amount, datetime.now(), new_balance,username)
+        transaction_data = ('Credit', deposit_amount, ist_time, new_balance,username)
         cursor.execute(insert_transaction_query, transaction_data)
         connection.commit()
         return render_template('withdraw_success.html', amount=deposit_amount,username=username)
@@ -186,10 +190,11 @@ def deposit():
 
 @app.route('/transactions.html')
 def transactions():
-    username = request.args.get('username')
     connection = get_db_connection()
     cursor = connection.cursor()
-
+    
+    
+    username = request.args.get('username')
     # Retrieve the transaction history for the user
     sql = "SELECT * FROM transactions WHERE user = %s"
     cursor.execute(sql, (username,))
@@ -206,5 +211,5 @@ def logout():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run('0.0.0.0',port=5000)
     
