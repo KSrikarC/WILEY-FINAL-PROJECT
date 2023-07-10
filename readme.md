@@ -25,7 +25,7 @@ This is a simple banking application developed using Flask and MySQL. It allows 
 
 1. Clone the repository:
 
-   git clone https://github.com/your-username/ -bank.git
+   git clone https://github.com/KSrikarC/WILEY-FINAL-PROJECT.git
 
 2. Install the required dependencies:   
 
